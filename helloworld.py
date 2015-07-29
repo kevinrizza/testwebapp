@@ -1,51 +1,31 @@
-textarea="""
-<b>Enter ROT13 text into the text area:</b>
-<br>
-<br>
-<form method="post">
-    <textarea type="text" style="height: 100px; width: 400px;" name="text">%(cipher)s</textarea>
-    <Input Type="submit">
-</form>
-"""
-
-form="""
-<form method="post">
-    <b>Signup</b>
-    <br>
-    <br>
-    <label>Username
-	<input type="text" name="username" value=%(username)s>
-    </label>
-    <div style="color: red">%(usererror)s</div>
-    <label>Password
-	<input type="text" name="password">
-    </label>
-    <div style="color: red">%(pworderror)s</div>
-    <label>Verify Password
-	<input type="text" name="verify">
-    </label>
-    <div style="color: red">%(pwordmismatch)s</div>
-    <label>Email (optional)
-	<input type="text" name="email" value=%(email)s>
-    </label>
-    <div style="color: red">%(emailerror)s</div>
-    <br>
-    <input type="submit">
-</form>
-"""
-
+import os
 import webapp2
 import cgi
 import re
+import jinja2
 
-class MainPage(webapp2.RequestHandler):
+template_dir = os.path.join(os.path.dirname(__file__), 'html')
+jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir), autoescape=True)
+
+class Handler(webapp2.RequestHandler):
+	def write(self, *a, **kw):
+		self.response.out.write(*a, **kw)
+		
+	def render_str(self, template, **params):
+		t = jinja_env.get_template(template)
+		return t.render(params)
+		
+	def render(self, template, **kw):
+		self.write(self.render_str(template, **kw))
+
+class MainPage(Handler):
     def write_form(self, usererror="", pworderror="", pwordmismatch="", emailerror="", username="", email=""):
-		self.response.out.write(form % {"usererror": usererror,
-							"pworderror": pworderror,
-							"pwordmismatch": pwordmismatch,
-							"emailerror": emailerror,
-							"username": cgi.escape(username, quote = True),
-							"email": cgi.escape(email, quote = True)})
+		self.render("login.html",usererror=usererror,
+								 pworderror=pworderror,
+								 pwordmismatch=pwordmismatch,
+								 emailerror=emailerror,
+								 username=username,
+								 email=email)
 
     def get(self):
         #self.response.headers['Content-Type'] = 'text/plain'
@@ -72,9 +52,9 @@ class ThanksHandler(webapp2.RequestHandler):
 		self.response.out.write("Welcome, " + username + "! Log in successful!")
 
 
-class Rot13(webapp2.RequestHandler):
+class Rot13(Handler):
     def write_rot(self, cipher=""):
-		self.response.out.write(textarea % {"cipher": cgi.escape(cipher)})
+		self.render('rot13.html', cipher=cipher)
 	
     def get(self):
         self.write_rot()
@@ -115,7 +95,7 @@ def verify_pword(password,verify):
 def valid_email(email):
 	EMAIL_RE = re.compile(r"^[\S]+@[\S]+\.[\S]+$")
 	
-	if EMAIL_RE.match(email):
+	if (EMAIL_RE.match(email) or email == ''):
 	    return ''
 	else:
 		return "Invalid email."
