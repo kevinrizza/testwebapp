@@ -46,7 +46,7 @@ class MainPage(Handler):
         else:
 			self.redirect("/thanks?username=" + username)
 			
-class ThanksHandler(webapp2.RequestHandler):
+class Thanks(webapp2.RequestHandler):
 	def get(self):
 		username = self.request.get('username')
 		self.response.out.write("Welcome, " + username + "! Log in successful!")
@@ -63,9 +63,20 @@ class Rot13(Handler):
         text = self.request.get('text')
         cipher = caesar_cipher(text)
         self.write_rot(cipher)
+        
+class ShoppingPage(Handler):
+	def get(self):
+		items = self.request.get_all("food")
+		self.render("shopping_list.html", items=items)
+		
+class FizzBuzz(Handler):
+	def get(self):
+		n = self.request.get('n', 0)
+		n = n and int(n)
+		self.render('fizzbuzz.html', n = n)
 
 app = webapp2.WSGIApplication([
-    ('/', MainPage),('/thanks',ThanksHandler),('/Rot13',Rot13),
+    ('/', MainPage),('/thanks',Thanks),('/rot13',Rot13),('/fizzbuzz',FizzBuzz),('/shopping',ShoppingPage),
 ], debug=True)
 
 #Helper Functions

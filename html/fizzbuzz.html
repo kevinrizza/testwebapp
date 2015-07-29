@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<ol>
+	{% for x in range (1,n+1) %}
+		{% set fizzbuzz = '' %}
+		{% if (x % 3) == 0 %}
+			{% set fizzbuzz = fizzbuzz + 'Fizz' %}
+		{% endif %}
+		{% if (x % 5) == 0 %}
+			{% set fizzbuzz = fizzbuzz + 'Buzz' %}
+		{% endif %}
+		{% if fizzbuzz == '' %}
+			{% set fizzbuzz = x %}
+		{% endif %}
+		<li>{{fizzbuzz}}</li>
+	{% endfor %}
+</ol>
+
+{% endblock %}
